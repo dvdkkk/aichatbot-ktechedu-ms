@@ -130,7 +130,7 @@ export const CourseSection: React.FC = () => {
             title="AI 챗봇 앱 개발"
             subtitle="Django를 활용하여 AI 챗봇 앱을 개발하고 MariaDB 연동"
             icon={Smartphone}
-            image="https://postfiles.pstatic.net/MjAyNjAyMDlfMTA1/MDAxNzcwNjIzNDA3NDM0.FcqW2l5yGgtXs1clsTv1xc-dvZBu5VNqaq5IRjR6d9wg.tpYY8LnTBpTFF4o2YAgvvRYBvNwel9Pp3QupCOG2Mwog.JPEG/%ED%95%9C%EC%A7%81%EA%B5%90-%EC%B1%97%EB%B4%874.jpg?type=w966"
+            image="https://images.unsplash.com/photo-1684487747720-1ba29cda82f8?q=80&w=1332&auto=format&fit=crop"
             projectTitle="AI 챗봇 UI 구성과 앱 개발 및 구동"
             steps={[
               {
