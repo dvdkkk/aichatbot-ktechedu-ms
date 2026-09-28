@@ -1,5 +1,6 @@
-
 import React, { useEffect } from 'react';
+
+const CONSULTATION_URL = "https://naver.me/FG794pnA";
 
 export const Footer: React.FC = () => {
   useEffect(() => {
@@ -17,6 +18,17 @@ export const Footer: React.FC = () => {
     // 리포트2.0 로그분석코드 완료
   }, []);
 
+  const handlePhoneClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // 모바일 기기 여부 확인
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1024;
+    if (!isMobile) {
+      // PC 환경에서는 상담신청 주소로 새창 열기
+      e.preventDefault();
+      window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer');
+    }
+    // 모바일 환경에서는 기본 href="tel:01046312547" 전화 연결
+  };
+
   return (
     <footer className="bg-black text-zinc-500 py-6 border-t border-zinc-900 text-sm">
       <div className="container mx-auto px-4">
@@ -32,7 +44,9 @@ export const Footer: React.FC = () => {
                 <p className="font-bold text-zinc-400 mb-2">고객센터</p>
                 <a 
                   href="tel:01046312547" 
-                  className="text-2xl font-bold text-white hover:text-yellow-400 transition-colors md:pointer-events-none md:cursor-default md:hover:text-white inline-block"
+                  onClick={handlePhoneClick}
+                  title="상담신청"
+                  className="text-2xl font-bold text-white hover:text-yellow-400 transition-colors inline-block cursor-pointer"
                 >
                   010-4631-2547
                 </a>

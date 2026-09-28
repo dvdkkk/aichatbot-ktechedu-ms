@@ -1,6 +1,7 @@
+import React, { useRef, useState, useEffect, ReactNode } from 'react';
+import { Phone, MapPin, ExternalLink, CheckCircle2, Sparkles, ArrowRight, Calendar } from 'lucide-react';
 
-import React, { useState, useRef, useEffect, ReactNode } from 'react';
-import { Send, Phone, MapPin, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
+const CONSULTATION_URL = "https://naver.me/FG794pnA";
 
 // 스크롤 애니메이션 컴포넌트
 interface RevealProps {
@@ -45,244 +46,139 @@ const Reveal: React.FC<RevealProps> = ({ children, className = "", delay = 0 }) 
 };
 
 export const ConsultationForm: React.FC = () => {
-  const [status, setStatus] = useState<"IDLE" | "SUCCESS">("IDLE");
-  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
-  const [isAgreed, setIsAgreed] = useState(true);
-  const [ipAddress, setIpAddress] = useState('');
-
-  // 접속자 IP 가져오기
-  useEffect(() => {
-    const fetchIp = async () => {
-      try {
-        const response = await fetch('https://api.ipify.org?format=json');
-        const data = await response.json();
-        if (data.ip) {
-          setIpAddress(data.ip);
-        }
-      } catch (error) {
-        console.error('IP 수집 실패:', error);
-      }
-    };
-    fetchIp();
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!isAgreed) {
-      alert("개인정보 수집 및 이용에 동의해야 합니다.");
-      return;
+  const handlePhoneClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // 모바일 기기 여부 확인 (UserAgent 또는 1024px 미만 뷰포트)
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1024;
+    if (!isMobile) {
+      // PC 환경에서는 상담신청 주소로 새창 열기
+      e.preventDefault();
+      window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer');
     }
-    
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    
-    // InputHaven 폼 ID 설정
-    formData.set('_form_id', 'c6397110de9deec24d35de40e8d1e38b');
-
-    // InputHaven 표준 필드 호환 (name, message) 및 기존 상세 항목 보존
-    const nameVal = formData.get('이름');
-    if (nameVal && !formData.get('name')) {
-      formData.set('name', String(nameVal));
-    }
-    const phoneVal = formData.get('연락처') || '-';
-    const ageVal = formData.get('나이') || '-';
-    const purposeVal = formData.get('교육목적') || '-';
-    const contentVal = formData.get('문의내용') || '없음';
-    
-    if (!formData.get('message')) {
-      formData.set(
-        'message',
-        `[연락처] ${phoneVal} / [나이] ${ageVal} / [교육목적] ${purposeVal}\n[문의내용]\n${contentVal}`
-      );
-    }
-
-    // 1. 낙관적 UI (Optimistic UI): 서버 응답을 대기하지 않고 즉시 성공 메시지 표시 (0.1초 체감)
-    setStatus("SUCCESS");
-
-    // 2. 백그라운드 전송 및 keepalive: true (페이지 이탈이나 창 닫힘 시에도 전송 중단 방지)
-    try {
-      fetch("https://inputhaven.com/api/v1/submit", {
-        method: "POST",
-        body: formData,
-        keepalive: true,
-        headers: {
-          'Accept': 'application/json'
-        }
-      }).catch((error) => {
-        console.error("문의 접수 백그라운드 전송 중 오류:", error);
-      });
-    } catch (error) {
-      console.error("문의 접수 백그라운드 전송 실패:", error);
-    }
+    // 모바일 환경에서는 기본 href="tel:..." 로 전화 연결
   };
 
   return (
-    <section id="consultation" className="py-8 bg-yellow-400 text-black scroll-mt-24">
+    <section id="consultation" className="py-12 md:py-16 bg-yellow-400 text-black scroll-mt-24">
       <div className="container mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-10 md:gap-12 items-center">
           
           {/* Left Text */}
-          <div className="space-y-6 lg:sticky lg:top-24">
+          <div className="space-y-6">
             <Reveal>
-              <h2 className="text-3xl md:text-4xl font-black leading-tight mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/10 border border-black/20 text-black font-bold text-xs mb-4">
+                <Sparkles size={14} className="text-black" />
+                <span>1:1 맞춤 무료 진로 컨설팅</span>
+              </div>
+              <h2 className="text-3xl md:text-5xl font-black leading-tight mb-6 tracking-tight">
                 망설이지 마세요.<br/>
                 AI 전문가가 <br/>
                 친절하게 안내해드립니다.
               </h2>
-              <p className="text-lg font-medium text-black/80 mb-6">
+              <p className="text-lg md:text-xl font-medium text-black/85 mb-6 leading-relaxed">
                 국비지원 자격 여부부터 취업 및 교육과정까지<br/>
-                <span className="border-b-2 border-black">무료로 상담해드립니다.</span>
+                <span className="border-b-2 border-black font-bold">무료로 상담해드립니다.</span>
               </p>
               
-              <div className="space-y-3 pt-4">
-                  <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-black text-yellow-400 rounded-full flex items-center justify-center">
-                          <Phone size={20} />
-                      </div>
-                      <div>
-                          <p className="text-xs font-bold opacity-70">교육문의</p>
-                          <a href="tel:01046312547" className="text-2xl font-black block hover:opacity-80 transition-opacity md:pointer-events-none md:cursor-default">010-4631-2547</a>
-                      </div>
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-black text-yellow-400 rounded-full flex items-center justify-center shrink-0 shadow-md">
+                    <Phone size={22} />
                   </div>
-                  <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-black text-yellow-400 rounded-full flex items-center justify-center">
-                          <MapPin size={20} />
-                      </div>
-                      <div>
-                          <p className="text-xs font-bold opacity-70">교육장소</p>
-                          <p className="text-lg font-bold">안산</p>
-                      </div>
+                  <div>
+                    <p className="text-xs font-bold opacity-75">교육문의 </p>
+                    <a 
+                      href="tel:01046312547" 
+                      onClick={handlePhoneClick}
+                      className="text-2xl md:text-3xl font-black block hover:opacity-75 transition-opacity cursor-pointer"
+                      title="클릭 시 상담 연결"
+                    >
+                      010-4631-2547
+                    </a>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-black text-yellow-400 rounded-full flex items-center justify-center shrink-0 shadow-md">
+                    <MapPin size={22} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold opacity-75">교육장소</p>
+                    <p className="text-xl font-bold">안산캠퍼스</p>
+                  </div>
+                </div>
               </div>
-              <p className="font-bold text-base mt-4">여러분의 꿈을 응원합니다!</p>
+
+              <p className="font-bold text-base md:text-lg mt-6 text-black/90">
+                여러분의 새로운 도약과 꿈을 끝까지 응원합니다!
+              </p>
             </Reveal>
           </div>
 
-          {/* Right Form */}
-          <Reveal delay={200} className="h-full">
-            <div className="bg-white rounded-2xl p-4 md:p-7 shadow-2xl h-full">
-              {status === "SUCCESS" ? (
-                  <div className="text-center py-12 animate-pop-in">
-                      <div className="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <CheckCircle size={28} />
-                      </div>
-                      <h3 className="text-xl font-bold mb-2">상담 신청이 완료되었습니다!</h3>
-                      <p className="text-gray-600 text-sm">빠른 시일 내에 전문 상담원이 연락드리겠습니다.</p>
-                      <button 
-                        type="button"
-                        onClick={() => setStatus("IDLE")} 
-                        className="mt-6 text-xs text-gray-500 hover:text-black underline transition-colors"
-                      >
-                        다시 작성하기
-                      </button>
-                  </div>
-              ) : (
-                  <form 
-                    action="https://inputhaven.com/api/v1/submit" 
-                    method="POST" 
-                    onSubmit={handleSubmit} 
-                    className="space-y-2 md:space-y-3"
-                  >
-                  {/* InputHaven Form ID 및 메타데이터 */}
-                  <input type="hidden" name="_form_id" value="c6397110de9deec24d35de40e8d1e38b" />
-                  <input type="hidden" name="user_ip" value={ipAddress} />
-                  <input type="hidden" name="_subject" value="[신규 상담 신청] AI기반 인공지능 챗봇 개발" />
+          {/* Right Column: 새로 생성된 상담신청 디자인 카드 & 버튼 (좌우 나란히 배치) */}
+          <Reveal delay={200} className="w-full">
+            <div className="bg-black text-white rounded-3xl p-6 md:p-10 shadow-2xl border border-zinc-800 relative overflow-hidden group">
+              {/* Decorative Accent Glow */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-yellow-400/5 rounded-full blur-2xl pointer-events-none translate-y-1/2 -translate-x-1/2"></div>
 
-                  <h3 className="text-lg font-bold mb-2 md:mb-3 flex items-center gap-2">
-                      빠른 교육상담 신청
-                      <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+              <div className="relative z-10 space-y-6">
+                {/* Card Header */}
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800/80 pb-5">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400 text-black text-xs font-black uppercase tracking-wider">
+                    <Calendar size={13} />
+                    <span>네이버 간편 예약</span>
+                  </div>
+                  <span className="text-xs font-semibold text-yellow-400/90 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    선착순 마감 임박
+                  </span>
+                </div>
+
+                {/* Card Title & Desc */}
+                <div>
+                  <h3 className="text-2xl md:text-3xl font-black text-white leading-tight mb-3">
+                    빠르고 간편한 <br/>
+                    <span className="text-yellow-400">온라인 상담신청</span>
                   </h3>
-                  
-                  <div className="grid md:grid-cols-2 gap-2 md:gap-3">
-                      <div className="space-y-0.5 md:space-y-1">
-                          <label className="text-xs font-bold text-gray-700 ml-1">이름</label>
-                          <input required name="이름" type="text" placeholder="홍길동" className="w-full px-3 py-2 md:py-2.5 rounded-lg border border-gray-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all text-sm" />
-                      </div>
-                      <div className="space-y-0.5 md:space-y-1">
-                          <label className="text-xs font-bold text-gray-700 ml-1">나이</label>
-                          <input required name="나이" type="text" placeholder="예: 30" className="w-full px-3 py-2 md:py-2.5 rounded-lg border border-gray-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all text-sm" />
-                      </div>
-                  </div>
-
-                  <div className="space-y-0.5 md:space-y-1">
-                      <label className="text-xs font-bold text-gray-700 ml-1">연락처</label>
-                      <input required name="연락처" type="tel" placeholder="010-0000-0000" className="w-full px-3 py-2 md:py-2.5 rounded-lg border border-gray-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all text-sm" />
-                  </div>
-
-                  <div className="space-y-0.5 md:space-y-1">
-                      <label className="text-xs font-bold text-gray-700 ml-1">교육목적</label>
-                      <div className="flex flex-wrap gap-1.5 md:gap-2">
-                          {['취업/이직', '자기개발', '창업', '기타'].map((purpose) => (
-                              <label key={purpose} className="flex items-center gap-2 p-1.5 md:p-2 border rounded-lg cursor-pointer hover:bg-gray-50 flex-1 min-w-[80px] justify-center">
-                                  <input type="radio" name="교육목적" value={purpose} required className="accent-yellow-400 w-3.5 h-3.5" />
-                                  <span className="text-xs font-bold">{purpose}</span>
-                              </label>
-                          ))}
-                      </div>
-                  </div>
-
-                  <div className="space-y-0.5 md:space-y-1">
-                      <label className="text-xs font-bold text-gray-700 ml-1">문의내용</label>
-                      <textarea name="문의내용" rows={2} placeholder="궁금하신 점을 자유롭게 적어주세요." className="w-full px-3 py-2 md:py-2.5 rounded-lg border border-gray-200 focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/20 outline-none transition-all resize-none text-sm"></textarea>
-                  </div>
-
-                  {/* Privacy Policy */}
-                  <div className="pt-2 border-t border-gray-100">
-                      <div className="flex items-center justify-between mb-1">
-                          <label className="flex items-center gap-2 cursor-pointer select-none">
-                              <input 
-                                  type="checkbox" 
-                                  checked={isAgreed}
-                                  onChange={(e) => setIsAgreed(e.target.checked)}
-                                  className="w-4 h-4 accent-yellow-400 rounded cursor-pointer" 
-                              />
-                              <span className="text-xs font-bold text-gray-700">
-                                  개인정보 수집 및 이용에 동의합니다.
-                              </span>
-                          </label>
-                          <button 
-                              type="button"
-                              onClick={() => setIsPrivacyOpen(!isPrivacyOpen)}
-                              className="text-[10px] font-bold text-gray-500 hover:text-black flex items-center gap-1 bg-gray-100 px-2 py-1 rounded"
-                          >
-                              {isPrivacyOpen ? '접기' : '자세히보기'}
-                              {isPrivacyOpen ? <ChevronUp size={10}/> : <ChevronDown size={10}/>}
-                          </button>
-                      </div>
-
-                      {isPrivacyOpen && (
-                          <div className="bg-gray-50 p-2.5 rounded-lg text-[10px] text-black animate-fade-in-down border border-gray-200 mb-2">
-                              <h5 className="font-bold mb-1.5">개인정보 수집 및 이용 동의 (필수)</h5>
-                              <p className="mb-2 leading-tight">한국직업능력교육원 실시간온라인문의 신청을 위해 다음과 같이 개인정보를 수집 및 이용합니다.</p>
-                              
-                              <div className="grid grid-cols-[60px_1fr] gap-y-1.5 gap-x-2 border-t border-gray-200 pt-2 text-left">
-                                  <div className="font-bold text-gray-600 bg-gray-100 rounded px-1 py-0.5 text-center">수집목적</div>
-                                  <div className="font-medium py-0.5">온라인문의</div>
-                                  
-                                  <div className="font-bold text-gray-600 bg-gray-100 rounded px-1 py-0.5 text-center">수집항목</div>
-                                  <div className="font-medium py-0.5">이름, 나이, 연락처, 교육목적, 문의내용</div>
-                                  
-                                  <div className="font-bold text-gray-600 bg-gray-100 rounded px-1 py-0.5 text-center">보유기간</div>
-                                  <div className="font-medium py-0.5">60일</div>
-                              </div>
-                          </div>
-                      )}
-                  </div>
-
-                  <button 
-                      type="submit"
-                      className="w-full bg-black text-white font-bold py-3 rounded-lg text-base hover:bg-zinc-800 transition-colors flex items-center justify-center gap-2 shadow-lg cursor-pointer"
-                  >
-                      무료상담 신청하기
-                      <Send size={16} />
-                  </button>
-                  <p className="text-[10px] text-center text-gray-500 mt-2">
-                      개인정보는 상담 목적으로만 사용되며 안전하게 보호됩니다.
+                  <p className="text-zinc-400 text-sm md:text-base leading-relaxed">
+                    복잡한 절차 없이 간편하게 상담을 예약하세요. 전문 상담원이 교육과정 및 국비지원 혜택을 1:1 맞춤으로 친절히 안내해 드립니다.
                   </p>
-                  </form>
-              )}
+                </div>
+
+                {/* Benefit Points */}
+                <div className="bg-zinc-900/90 rounded-2xl p-4 md:p-5 border border-zinc-800 space-y-2.5">
+                  <div className="flex items-center gap-2.5 text-sm text-zinc-200">
+                    <CheckCircle2 size={18} className="text-yellow-400 shrink-0" />
+                    <span>국비지원 100% 무료 수강 자격 여부 진단</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-sm text-zinc-200">
+                    <CheckCircle2 size={18} className="text-yellow-400 shrink-0" />
+                    <span>비전공자·초보자를 위한 맞춤 취업 로드맵 설계</span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-sm text-zinc-200">
+                    <CheckCircle2 size={18} className="text-yellow-400 shrink-0" />
+                    <span>매월 최대 80만원 훈련장려금 & 수당 안내</span>
+                  </div>
+                </div>
+
+                {/* Primary CTA Button (상담신청 버튼 생성 & 새창 링크) */}
+                <a
+                  href={CONSULTATION_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-500 text-black font-black text-lg md:text-xl py-4 md:py-5 px-6 rounded-2xl shadow-[0_8px_25px_rgba(250,204,21,0.35)] hover:shadow-[0_12px_35px_rgba(250,204,21,0.5)] transition-all transform hover:-translate-y-1 active:translate-y-0 flex items-center justify-center gap-3 group/btn"
+                >
+                  <span>상담신청 바로가기</span>
+                  <ExternalLink size={20} className="transition-transform group-hover/btn:translate-x-1" />
+                </a>
+
+                <p className="text-center text-[11px] md:text-xs text-zinc-500">
+                  * 버튼을 누르시면 네이버 상담 예약 페이지가 새 창으로 열립니다.
+                </p>
+              </div>
             </div>
           </Reveal>
+
         </div>
       </div>
     </section>

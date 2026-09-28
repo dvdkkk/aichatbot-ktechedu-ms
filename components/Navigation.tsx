@@ -1,6 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
-import { Menu, X, PhoneCall } from 'lucide-react';
+import { Menu, X, PhoneCall, ExternalLink } from 'lucide-react';
+
+const CONSULTATION_URL = "https://naver.me/FG794pnA";
 
 export const Navigation: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -14,17 +15,21 @@ export const Navigation: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, isConsultation = false) => {
+    if (isConsultation) {
+      e.preventDefault();
+      window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer');
+      setIsMobileMenuOpen(false);
+      return;
+    }
+
     e.preventDefault();
     const targetId = href.replace('#', '');
     const element = document.getElementById(targetId);
     if (element) {
       const headerOffset = 80;
-      const isMobile = window.innerWidth < 768;
-      const additionalOffset = (isMobile && targetId === 'consultation') ? 390 : 0;
-
       const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset + additionalOffset;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
       window.scrollTo({
         top: offsetPosition,
@@ -34,13 +39,24 @@ export const Navigation: React.FC = () => {
     setIsMobileMenuOpen(false);
   };
 
+  const handlePhoneClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // 모바일 기기 여부 확인
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1024;
+    if (!isMobile) {
+      // PC 환경: 상담신청 주소로 새창 열기
+      e.preventDefault();
+      window.open(CONSULTATION_URL, '_blank', 'noopener,noreferrer');
+    }
+    // 모바일 환경: 기본 tel:01046312547 동작 유지
+  };
+
   const navLinks = [
     { name: '비전 & 혜택', href: '#vision' },
     { name: '과정소개', href: '#courses' },
     { name: '취업지원', href: '#employment-support' },
     { name: '취업현황', href: '#employment' },
     { name: '수강후기', href: '#reviews' },
-    { name: '상담신청', href: '#consultation' },
+    { name: '상담신청', href: CONSULTATION_URL, isExternal: true },
   ];
 
   return (
@@ -60,23 +76,24 @@ export const Navigation: React.FC = () => {
             <a 
               key={link.name} 
               href={link.href} 
-              onClick={(e) => handleNavClick(e, link.href)}
+              target={link.isExternal ? "_blank" : undefined}
+              rel={link.isExternal ? "noopener noreferrer" : undefined}
+              onClick={(e) => handleNavClick(e, link.href, !!link.isExternal)}
               className={`text-lg font-medium transition-colors ${
                 link.name === '상담신청' 
-                  ? 'text-yellow-400 font-bold' 
+                  ? 'text-yellow-400 font-bold flex items-center gap-1 hover:text-yellow-300' 
                   : 'text-gray-300 hover:text-yellow-400'
               }`}
             >
-              {link.name}
+              <span>{link.name}</span>
+              {link.isExternal && <ExternalLink size={14} className="opacity-80" />}
             </a>
           ))}
           <a 
             href="tel:01046312547" 
-            onClick={(e) => {
-              const isPc = window.innerWidth >= 1024;
-              if (isPc) handleNavClick(e, '#consultation');
-            }}
-            className="flex items-center gap-2 bg-yellow-400 text-black px-5 py-2 rounded-full font-bold text-lg hover:bg-yellow-300 transition-transform hover:scale-105"
+            onClick={handlePhoneClick}
+            title="상담신청"
+            className="flex items-center gap-2 bg-yellow-400 text-black px-5 py-2 rounded-full font-bold text-lg hover:bg-yellow-300 transition-transform hover:scale-105 cursor-pointer shadow-md"
           >
             <PhoneCall size={20} />
             010-4631-2547
@@ -96,22 +113,28 @@ export const Navigation: React.FC = () => {
             <a 
               key={link.name} 
               href={link.href} 
-              className={`text-base font-medium py-2 border-b border-zinc-800 ${
+              target={link.isExternal ? "_blank" : undefined}
+              rel={link.isExternal ? "noopener noreferrer" : undefined}
+              className={`text-base font-medium py-2 border-b border-zinc-800 flex items-center justify-between ${
                 link.name === '상담신청' 
                   ? 'text-yellow-400 font-bold' 
                   : 'text-gray-300 hover:text-yellow-400'
               }`}
-              onClick={(e) => handleNavClick(e, link.href)}
+              onClick={(e) => handleNavClick(e, link.href, !!link.isExternal)}
             >
-              {link.name}
+              <span>{link.name}</span>
+              {link.isExternal && <ExternalLink size={14} />}
             </a>
           ))}
           <a 
-            href="#consultation" 
-            className="bg-yellow-400 text-black text-center py-3 rounded-md font-bold text-sm"
-            onClick={(e) => handleNavClick(e, '#consultation')}
+            href={CONSULTATION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-yellow-400 text-black text-center py-3 rounded-md font-bold text-sm flex items-center justify-center gap-2 shadow-lg hover:bg-yellow-300 transition-colors"
+            onClick={() => setIsMobileMenuOpen(false)}
           >
-            무료상담 신청하기
+            <span>무료상담 신청하기</span>
+            <ExternalLink size={16} />
           </a>
         </div>
       )}
